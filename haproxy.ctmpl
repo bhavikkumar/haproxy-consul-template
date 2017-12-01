@@ -28,7 +28,7 @@ backend {{ $service.Name }}{{ $version }}
     mode http
     balance roundrobin
     option forwardfor
-    option httpchk get /healthcheck
+    option httpchk GET /healthcheck
     http-check expect ! rstatus ^5
     default-server inter 2s fall 1 rise 2
     reqrep ^([^\ ]*\ /)v{{ $version }}/{{ $service.Name }}[/]?(.*)     \1{{ $service.Name }}/\2{{range $c,$d:=service $service.Name}}{{ if $d.Tags | contains "edge" }}{{ if $d.Tags | contains (printf "%s%s" "version=" $version) }}
