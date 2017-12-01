@@ -1,0 +1,30 @@
+sudo: required
+
+env:
+  global:
+  - REPO=bhavikk/haproxy-consul-template
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - secure: nrpvRewapyQmbgnSjYT02PvDBIM5GuMIy1SdKnqnhY6ukCv1wKmxpDMP1KauXzYyUrx5i/NVRfEFIOmT/ckwYeeHkY6F9sBDrKPpRTyWc1KbmpycyRv5aVNOpMRKW2v47gzCK46TPtk0MbrJjo4fU3ux9TcFtOVHmbakjNFa8ckfbn9d17kGxlU2fbU2hmymZHgWLZep3e33fJr1CYvkjeOAE+A2/SUmQpJzmlwokZnFpv/nJjwoC1fO7hZTf8QG9+Ro3EWqxnsMLRYD+LnpWvs1SeVsQDr8NkFd5VLc84o5HSVz/f4uEfe8u38o0WFozojlRQ7gxDh1urEvlu6eMGyh1ue+jufTopzJbrSMBGK1Rjp132zfNIp+qOnhu0B70Eu1aeJb1M7RPJNGA7ttxlt9o9Ct20SKCvSSSJi/7pt66KiPIKmHutZcCFCgsHe0jebscf9aDqNxLAHK4u8GsVuaVoWfWtGU11W/2+PPs1wSzBbFieh+XTmug9O4cYRNncPiDFiq/57sJBBgLF/b7vfOgenWwSWVEg3fbJ8gSX8L7cSdHJkN2UOOSZAwMLiymhLzRPHocTpBlVec2qPCM4DYk6tiS1Z5hoLg+B/HdGvZ0qLc5UQfa1L0RnXcJId6A/rBEpjmikMqzeRCRMPCbuQrw0PZY5CHiM7zYZDv91U=
+  - secure: QBfrBOMRMjC+t9fia48ff5vclWZ2Gm0KA5FCAufyajeMTDMdqmvlaTvNdimSsA9B0fsqMDXw3rnqwrG6x+viXb91bN0sZc0rIZ/UBUiWDKDL8/5Xf6tE07iK3RUmqUHK1FveyLcsyWBFS+NQuP6SE5gYjWAzDMsBs6rpsLTGNt/w20ChSXCCKKCmgF2YO47BYOHXtOqzQ0jOlVrRmeEE3gXFlWMhXk4utry+COQLELduhXApetbTAJPS2THdPJ485Nxjxi9qz4YnAuOukcNNEEkZiy4ZBTZ89a361jEJ3Oz1IO50Yd3pkW1eZKGCtop1iCkaR0hwBu+nDyf2lPpkfTUsSkVGFGNMKKTtu7i89vAyywrtqJ64trRmm4/8UfTY4sYMtRqUDPAJ9JF7ooC6kONnGIYIQ+IH8+QNaNeOcnraHirxFvc/wFH21125wEDY5PjGkMl54bHDeqysgoaTzajr+gtKGC0hdfWMVox1lP2YD02UffsjOmok6QESgLX66lNrhhXtD3R5qHgsnOa2F8j2wP2eKx2/O7BBqfs5HAqcSkl7UolkPH1fDsTRR7p90n6j5TzXaX4wnud0/Qnah9qLC1AxKzOPWVetq1MGy3NKokpECHc93iQh05zrCwcgTo5lm+jWs+b45CTmdBWyKy0VNEQ5SFCFiCjbC70vY+g=
+
+services:
+- docker
+
+branches:
+  only:
+  - master
+
+before_script:
+- export TZ=Pacific/Auckland
+- export TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master"
+  ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
+
+script:
+- docker build -t $REPO:$TAG -f Dockerfile .
+
+after_success:
+- docker login -u $DOCKER_USER -p $DOCKER_PASS
+- if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then
+  docker tag $REPO:$TAG $REPO:$TRAVIS_BUILD_NUMBER; docker push $REPO:$TRAVIS_BUILD_NUMBER;
+  fi
+- docker push $REPO:$TAG
