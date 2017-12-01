@@ -1,4 +1,6 @@
 global
+    log 127.0.0.1   local0
+    log 127.0.0.1   local1 notice
     debug
     stats timeout 30s
     maxconn 1024
@@ -11,10 +13,10 @@ defaults
     timeout connect 5000
     timeout client  50000
     timeout server  50000
-    monitor-uri /healthcheck
 
 frontend http-in
-    bind *:80{{ range $i, $service := services }}{{ range $tag := .Tags }}{{ if $tag | regexMatch "^version=.+" }}{{ $version := index (. | split "=") 1 }}{{ if $service.Tags | contains "edge" }}
+    bind 0.0.0.0:80
+    monitor-uri /healthcheck{{ range $i, $service := services }}{{ range $tag := .Tags }}{{ if $tag | regexMatch "^version=.+" }}{{ $version := index (. | split "=") 1 }}{{ if $service.Tags | contains "edge" }}
     # Edge for {{ $service.Name }}, Version: {{ $version }}
     acl {{ $service.Name }}{{ $version }} path_beg /v{{ $version }}/{{ $service.Name }}
     use_backend {{ $service.Name }}{{ $version }} if {{ $service.Name }}{{ $version }}
